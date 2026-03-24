@@ -1,0 +1,132 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* DEFAULT DARK MODE (Grocery Theme) */
+    --background: 150 15% 6%; /* Deep dark green-tinted background */
+    --foreground: 0 0% 100%;
+
+    --card: 150 15% 9%; /* Slightly lighter for cards */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 150 15% 9%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 142 71% 45%; /* Vibrant grocery green */
+    --primary-foreground: 144 100% 10%; /* Dark text on green for contrast */
+
+    --secondary: 150 15% 15%; /* Muted dark green for secondary elements */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 150 15% 15%;
+    --muted-foreground: 150 10% 65%;
+
+    --accent: 142 71% 45%; /* Accent uses the vibrant green */
+    --accent-foreground: 144 100% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 15% 20%;
+    --input: 150 15% 20%;
+    --ring: 142 71% 45%;
+
+    --radius: 0.75rem;
+
+    /* Chart colors - vibrant for dark mode */
+    --chart-1: 142 71% 45%;
+    --chart-2: 43 100% 50%; /* Yellow/Orange for fruits */
+    --chart-3: 198 93% 60%; /* Blue for cold items */
+    --chart-4: 350 89% 60%; /* Red/Pink for meats */
+    --chart-5: 280 65% 60%; /* Purple for veggies/wine */
+
+    /* Sidebar styles */
+    --sidebar-background: 150 15% 5%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 142 71% 45%;
+    --sidebar-primary-foreground: 144 100% 10%;
+    --sidebar-accent: 150 15% 12%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 150 15% 15%;
+    --sidebar-ring: 142 71% 45%;
+  }
+
+  /* Optional light theme for the future, if needed */
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 150 15% 10%;
+    
+    --card: 0 0% 100%;
+    --card-foreground: 150 15% 10%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 150 15% 10%;
+    
+    --primary: 142 71% 41%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 150 15% 90%;
+    --secondary-foreground: 150 15% 10%;
+    
+    --muted: 150 15% 90%;
+    --muted-foreground: 150 10% 45%;
+    
+    --accent: 150 20% 90%;
+    --accent-foreground: 150 15% 10%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 150 15% 90%;
+    --input: 150 15% 90%;
+    --ring: 142 71% 41%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+  html {
+     @apply font-sans;
+     color-scheme: dark;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Glassmorphism Utilities */
+  .glass {
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  }
+  
+  .glass-card {
+    @apply bg-black/40 backdrop-blur-lg border border-white/5 shadow-xl rounded-xl;
+  }
+
+  .glass-panel {
+    @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-lg;
+  }
+  
+  .glass-input {
+    @apply bg-black/20 backdrop-blur-sm border border-white/10 focus:border-primary/50 focus:ring-primary/50 shadow-inner rounded-lg text-white placeholder:text-zinc-500;
+  }
+  
+  .glass-button {
+    @apply relative overflow-hidden bg-primary/90 hover:bg-primary backdrop-blur-md border border-white/10 shadow-lg transition-all duration-300;
+  }
+}
