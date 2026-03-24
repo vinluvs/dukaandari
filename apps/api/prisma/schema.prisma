@@ -1,0 +1,327 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  fullName     String   @map("full_name")
+  phone        String?
+  isVerified   Boolean  @default(false) @map("is_verified")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ownedShops    Shop[]         @relation("ShopOwner")
+  shopMemberships ShopMember[]
+  subscriptions Subscription[]
+
+  @@map("users")
+}
+
+// ─── SHOPS ────────────────────────────────────────────────────────────────────
+model Shop {
+  id                     String   @id @default(uuid())
+  ownerId                String   @map("owner_id")
+  name                   String
+  gstNumber              String?  @map("gst_number")
+  address                String?
+  financialYearStartMonth Int     @default(4) @map("financial_year_start_month")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  owner          User              @relation("ShopOwner", fields: [ownerId], references: [id])
+  members        ShopMember[]
+  categories     ProductCategory[]
+  uoms           Uom[]
+  products       Product[]
+  inventoryLogs  InventoryLog[]
+  customers      Customer[]
+  suppliers      Supplier[]
+  invoices       Invoice[]
+  payments       Payment[]
+  ledgerEntries  LedgerEntry[]
+  expenses       Expense[]
+
+  @@map("shops")
+}
+
+// ─── SHOP MEMBERS ─────────────────────────────────────────────────────────────
+model ShopMember {
+  id        String   @id @default(uuid())
+  shopId    String   @map("shop_id")
+  userId    String   @map("user_id")
+  role      String   @default("member") // owner | manager | member
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([shopId, userId])
+  @@map("shop_members")
+}
+
+// ─── PRODUCT CATEGORIES ───────────────────────────────────────────────────────
+model ProductCategory {
+  id          String   @id @default(uuid())
+  shopId      String   @map("shop_id")
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  shop     Shop      @relation(fields: [shopId], references: [id])
+  products Product[]
+
+  @@map("product_categories")
+}
+
+// ─── UOM ──────────────────────────────────────────────────────────────────────
+model Uom {
+  id        String   @id @default(uuid())
+  shopId    String   @map("shop_id")
+  name      String
+  symbol    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop          Shop           @relation(fields: [shopId], references: [id])
+  products      Product[]
+  inventoryLogs InventoryLog[]
+  invoiceItems  InvoiceItem[]
+
+  @@map("uoms")
+}
+
+// ─── PRODUCTS ─────────────────────────────────────────────────────────────────
+model Product {
+  id                String   @id @default(uuid())
+  shopId            String   @map("shop_id")
+  name              String
+  sku               String
+  categoryId        String?  @map("category_id")
+  uomId             String?  @map("uom_id")
+  gstPercentage     Decimal  @default(0) @map("gst_percentage") @db.Decimal(5, 2)
+  hsnCode           String?  @map("hsn_code")
+  sellingPrice      Decimal  @map("selling_price") @db.Decimal(12, 2)
+  purchasePrice     Decimal  @map("purchase_price") @db.Decimal(12, 2)
+  lowStockThreshold Int      @default(0) @map("low_stock_threshold")
+  imageUrl          String?  @map("image_url")
+  isActive          Boolean  @default(true) @map("is_active")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  shop          Shop             @relation(fields: [shopId], references: [id])
+  category      ProductCategory? @relation(fields: [categoryId], references: [id])
+  uom           Uom?             @relation(fields: [uomId], references: [id])
+  inventoryLogs InventoryLog[]
+  invoiceItems  InvoiceItem[]
+
+  @@unique([shopId, sku])
+  @@map("products")
+}
+
+// ─── INVENTORY LOGS (Append-only) ─────────────────────────────────────────────
+model InventoryLog {
+  id             String   @id @default(uuid())
+  shopId         String   @map("shop_id")
+  productId      String   @map("product_id")
+  uomId          String?  @map("uom_id")
+  changeType     String   @map("change_type") // sale | purchase | adjustment | opening
+  quantityChange Decimal  @map("quantity_change") @db.Decimal(12, 3)
+  referenceId    String?  @map("reference_id")
+  referenceType  String?  @map("reference_type") // invoice | purchase_order | adjustment
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  shop    Shop    @relation(fields: [shopId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  uom     Uom?    @relation(fields: [uomId], references: [id])
+
+  @@map("inventory_logs")
+}
+
+// ─── CUSTOMERS ────────────────────────────────────────────────────────────────
+model Customer {
+  id          String   @id @default(uuid())
+  shopId      String   @map("shop_id")
+  name        String
+  phone       String?
+  email       String?
+  creditLimit Decimal  @default(0) @map("credit_limit") @db.Decimal(12, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  shop          Shop          @relation(fields: [shopId], references: [id])
+  invoices      Invoice[]
+  ledgerEntries LedgerEntry[]
+
+  @@map("customers")
+}
+
+// ─── SUPPLIERS ────────────────────────────────────────────────────────────────
+model Supplier {
+  id        String   @id @default(uuid())
+  shopId    String   @map("shop_id")
+  name      String
+  phone     String?
+  email     String?
+  gstNumber String?  @map("gst_number")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  shop          Shop          @relation(fields: [shopId], references: [id])
+  ledgerEntries LedgerEntry[]
+
+  @@map("suppliers")
+}
+
+// ─── INVOICES ─────────────────────────────────────────────────────────────────
+model Invoice {
+  id            String   @id @default(uuid())
+  shopId        String   @map("shop_id")
+  invoiceNumber String   @map("invoice_number")
+  customerId    String?  @map("customer_id")
+  gstEnabled    Boolean  @default(false) @map("gst_enabled")
+  isIgst        Boolean  @default(false) @map("is_igst") // interstate → IGST
+  subtotal      Decimal  @db.Decimal(12, 2)
+  totalDiscount Decimal  @default(0) @map("total_discount") @db.Decimal(12, 2)
+  totalTax      Decimal  @map("total_tax") @db.Decimal(12, 2)
+  totalAmount   Decimal  @map("total_amount") @db.Decimal(12, 2)
+  paymentStatus String   @default("unpaid") @map("payment_status") // paid | partial | unpaid
+  status        String   @default("active") // active | voided
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  shop     Shop          @relation(fields: [shopId], references: [id])
+  customer Customer?     @relation(fields: [customerId], references: [id])
+  items    InvoiceItem[]
+  payments Payment[]
+
+  @@unique([shopId, invoiceNumber])
+  @@map("invoices")
+}
+
+// ─── INVOICE ITEMS ────────────────────────────────────────────────────────────
+model InvoiceItem {
+  id            String   @id @default(uuid())
+  invoiceId     String   @map("invoice_id")
+  productId     String   @map("product_id")
+  uomId         String?  @map("uom_id")
+  quantity      Decimal  @db.Decimal(12, 3)
+  price         Decimal  @db.Decimal(12, 2)
+  discount      Decimal  @default(0) @db.Decimal(12, 2)
+  gstPercentage Decimal  @default(0) @map("gst_percentage") @db.Decimal(5, 2)
+  taxAmount     Decimal  @map("tax_amount") @db.Decimal(12, 2)
+  total         Decimal  @db.Decimal(12, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  uom     Uom?    @relation(fields: [uomId], references: [id])
+
+  @@map("invoice_items")
+}
+
+// ─── PAYMENTS ─────────────────────────────────────────────────────────────────
+model Payment {
+  id            String   @id @default(uuid())
+  shopId        String   @map("shop_id")
+  invoiceId     String?  @map("invoice_id")
+  referenceType String   @map("reference_type") // invoice | purchase | expense
+  referenceId   String   @map("reference_id")
+  amount        Decimal  @db.Decimal(12, 2)
+  mode          String   @default("cash") // cash | upi | bank | card
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  shop    Shop     @relation(fields: [shopId], references: [id])
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@map("payments")
+}
+
+// ─── LEDGER ENTRIES (Append-only, source of truth) ───────────────────────────
+model LedgerEntry {
+  id            String   @id @default(uuid())
+  shopId        String   @map("shop_id")
+  entityType    String   @map("entity_type") // customer | supplier | expense
+  entityId      String   @map("entity_id")
+  debit         Decimal  @default(0) @db.Decimal(12, 2)
+  credit        Decimal  @default(0) @db.Decimal(12, 2)
+  referenceType String   @map("reference_type") // invoice | payment | purchase | expense
+  referenceId   String   @map("reference_id")
+  description   String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  shop     Shop      @relation(fields: [shopId], references: [id])
+  customer Customer? @relation(fields: [entityId], references: [id], map: "ledger_customer_fk")
+  supplier Supplier? @relation(fields: [entityId], references: [id], map: "ledger_supplier_fk")
+
+  @@map("ledger_entries")
+}
+
+// ─── EXPENSES ─────────────────────────────────────────────────────────────────
+model Expense {
+  id          String   @id @default(uuid())
+  shopId      String   @map("shop_id")
+  category    String
+  amount      Decimal  @db.Decimal(12, 2)
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  shop Shop @relation(fields: [shopId], references: [id])
+
+  @@map("expenses")
+}
+
+// ─── PLANS (SaaS Monetization) ────────────────────────────────────────────────
+model Plan {
+  id           String   @id @default(uuid())
+  name         String   @unique
+  price        Decimal  @db.Decimal(10, 2)
+  maxShops     Int      @map("max_shops")
+  featuresJson Json     @map("features_json")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+// ─── SUBSCRIPTIONS ────────────────────────────────────────────────────────────
+model Subscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  planId    String   @map("plan_id")
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  status    String   @default("active") // active | expired | cancelled
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+  plan Plan @relation(fields: [planId], references: [id])
+
+  @@map("subscriptions")
+}

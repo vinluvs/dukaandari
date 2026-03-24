@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "typeRoots": [
+      "../../node_modules/@types",
+      "./node_modules/@types"
+    ],
+    "paths": {
+      "@dukaandari/shared": ["../../packages/shared/src"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
