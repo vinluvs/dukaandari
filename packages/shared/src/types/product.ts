@@ -3,6 +3,8 @@ export interface Product {
   shopId: string;
   name: string;
   sku: string;
+  barcode?: string | null;
+  valuationMethod: string;
   categoryId?: string | null;
   uomId?: string | null;
   gstPercentage: number;

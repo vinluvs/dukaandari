@@ -112,6 +112,8 @@ model Product {
   shopId            String   @map("shop_id")
   name              String
   sku               String
+  barcode           String?
+  valuationMethod   String   @default("WEIGHTED_AVERAGE") @map("valuation_method")
   categoryId        String?  @map("category_id")
   uomId             String?  @map("uom_id")
   gstPercentage     Decimal  @default(0) @map("gst_percentage") @db.Decimal(5, 2)
@@ -131,6 +133,7 @@ model Product {
   invoiceItems  InvoiceItem[]
 
   @@unique([shopId, sku])
+  @@unique([shopId, barcode])
   @@map("products")
 }
 
@@ -168,7 +171,6 @@ model Customer {
 
   shop          Shop          @relation(fields: [shopId], references: [id])
   invoices      Invoice[]
-  ledgerEntries LedgerEntry[]
 
   @@map("customers")
 }
@@ -186,7 +188,6 @@ model Supplier {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   shop          Shop          @relation(fields: [shopId], references: [id])
-  ledgerEntries LedgerEntry[]
 
   @@map("suppliers")
 }
@@ -271,8 +272,7 @@ model LedgerEntry {
   createdAt     DateTime @default(now()) @map("created_at")
 
   shop     Shop      @relation(fields: [shopId], references: [id])
-  customer Customer? @relation(fields: [entityId], references: [id], map: "ledger_customer_fk")
-  supplier Supplier? @relation(fields: [entityId], references: [id], map: "ledger_supplier_fk")
+  // entityId is polymorphic (customer | supplier | expense) — no DB-level FK
 
   @@map("ledger_entries")
 }

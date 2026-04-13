@@ -27,19 +27,19 @@ Strict Rule:
 
 ## ✅ Define Scope
 
-* [ ] Single Account → Multiple Shops
-* [ ] Each shop has isolated data via `shop_id`
-* [ ] GST toggle per invoice
-* [ ] Financial year configurable (default: April–March)
-* [ ] Cloud-only (no offline for MVP)
-* [ ] hardware integration (barcode printer/scanner)
+* [x] Single Account → Multiple Shops
+* [x] Each shop has isolated data via `shop_id`
+* [x] GST toggle per invoice
+* [x] Financial year configurable (default: April–March)
+* [x] Cloud-only (no offline for MVP)
+* [x] hardware integration (barcode printer/scanner)
 
 ## ❌ Explicitly Excluded in MVP
 
-* [ ] No AI forecasting
-* [ ] No mobile app
-* [ ] No payment gateway integration
-* [ ] No WhatsApp automation
+* [x] No AI forecasting
+* [x] No mobile app
+* [x] No payment gateway integration
+* [x] No WhatsApp automation
 
 Lock scope before moving forward.
 
@@ -49,12 +49,12 @@ Lock scope before moving forward.
 
 ## 🧠 Architecture Decision
 
-* [ ] Backend: Express (REST API) + JWT
-* [ ] Frontend: Next.js
-* [ ] Database: PostgreSQL
-* [ ] Auth: JWT
-* [ ] Deployment: Docker (optional)
-* [ ] Multi-tenant via `shop_id` column
+* [x] Backend: Express (REST API) + JWT
+* [x] Frontend: Next.js
+* [x] Database: PostgreSQL
+* [x] Auth: JWT
+* [x] Deployment: Docker (optional)
+* [x] Multi-tenant via `shop_id` column
 
 ---
 
@@ -64,13 +64,13 @@ Create ER structure BEFORE coding endpoints.
 
 ### Core Tables
 
-* [ ] users
-* [ ] shops
-* [ ] shop_members
-* [ ] products
-* [ ] product_categories
-* [ ] uoms
-* [ ] inventory_logs
+* [x] users
+* [x] shops
+* [x] shop_members
+* [x] products
+* [x] product_categories
+* [x] uoms
+* [x] inventory_logs
 * [ ] customers
 * [ ] suppliers
 * [ ] invoices
@@ -93,15 +93,15 @@ Do NOT write business logic before schema finalized.
 
 ## Step 1: Authentication
 
-* [ ] Register user
-* [ ] Login with JWT
-* [ ] Token refresh
-* [ ] Password reset
+* [x] Register user
+* [x] Login with JWT
+* [x] Token refresh
+* [x] Password reset
 
 ## Step 2: Shop Creation
 
-* [ ] User creates first shop
-* [ ] Add additional shops
+* [x] User creates first shop
+* [x] Add additional shops
 
 ---
 
@@ -109,20 +109,20 @@ Do NOT write business logic before schema finalized.
 
 ## Product Management
 
-* [ ] Create product
-* [ ] SKU required
-* [ ] Create/select product category
-* [ ] Create/select UOM (unit of measure)
-* [ ] GST percentage field
-* [ ] HSN optional
-* [ ] Opening stock
+* [x] Create product
+* [x] SKU required
+* [x] Create/select product category
+* [x] Create/select UOM (unit of measure)
+* [x] GST percentage field
+* [x] HSN optional
+* [x] Opening stock
 
 ## Inventory Tracking
 
-* [ ] Stock increment on purchase
-* [ ] Stock decrement on sale
-* [ ] Maintain stock history log
-* [ ] Low stock threshold alert flag
+* [x] Stock increment on purchase
+* [x] Stock decrement on sale
+* [x] Maintain stock history log
+* [x] Low stock threshold alert flag
 
 Do not connect to billing until inventory fully tested.
 

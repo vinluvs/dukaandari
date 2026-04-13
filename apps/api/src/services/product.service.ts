@@ -5,6 +5,8 @@ import { z } from "zod";
 const ProductSchema = z.object({
   name: z.string().min(1),
   sku: z.string().min(1),
+  barcode: z.string().optional(),
+  valuationMethod: z.enum(["WEIGHTED_AVERAGE", "FIFO", "LIFO"]).default("WEIGHTED_AVERAGE"),
   categoryId: z.string().uuid().optional(),
   uomId: z.string().uuid().optional(),
   gstPercentage: z.number().min(0).max(100).default(0),
@@ -49,7 +51,13 @@ export const ProductService = {
     };
 
     const [items, total] = await Promise.all([
-      prisma.product.findMany({ where, skip, take: limit, orderBy: { name: "asc" } }),
+      prisma.product.findMany({ 
+        where, 
+        skip, 
+        take: limit, 
+        orderBy: { name: "asc" },
+        include: { category: true, uom: true } 
+      }),
       prisma.product.count({ where }),
     ]);
 
@@ -67,7 +75,7 @@ export const ProductService = {
   },
 
   async update(id: string, body: unknown, shopId: string) {
-    const data = ProductSchema.partial().parse(body);
+    const { openingStock, ...data } = ProductSchema.partial().parse(body);
     const product = await prisma.product.findFirst({ where: { id, shopId } });
     if (!product) throw new AppError(404, "Product not found");
     return prisma.product.update({ where: { id }, data });
