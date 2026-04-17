@@ -10,6 +10,7 @@ import supplierRoutes from "./supplier.routes";
 import expenseRoutes from "./expense.routes";
 import reportRoutes from "./report.routes";
 import profileRoutes from "./profile.routes";
+import purchaseRoutes from "./purchase.routes";
 
 export const router = Router();
 
@@ -32,3 +33,5 @@ router.use("/suppliers", supplierRoutes);
 router.use("/expenses", expenseRoutes);
 router.use("/reports", reportRoutes);
 router.use("/profile", profileRoutes);
+router.use("/purchases", purchaseRoutes);
+

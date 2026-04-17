@@ -101,8 +101,8 @@ export default function POSPage() {
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
-                  className={`relative rounded-xl border bg-card p-3 flex flex-col gap-2 cursor-pointer transition-shadow hover:shadow-md ${q > 0 ? "border-primary/60 ring-1 ring-primary/30" : ""}`}
-                  onClick={() => addToCart(product)}
+                  className={`relative rounded-xl border bg-card p-3 flex flex-col gap-2 transition-shadow ${product.currentStock === 0 ? "opacity-50 grayscale cursor-not-allowed" : "cursor-pointer hover:shadow-md"} ${q > 0 ? "border-primary/60 ring-1 ring-primary/30" : ""}`}
+                  onClick={() => product.currentStock && product.currentStock > 0 && addToCart(product)}
                 >
                   {/* Stock badge */}
                   {product.currentStock !== undefined && product.currentStock <= product.lowStockThreshold && (

@@ -2,7 +2,7 @@ import { prisma } from "../lib/prisma";
 import { AppError } from "../middleware/errorHandler";
 import { z } from "zod";
 
-const Schema = z.object({ category: z.string().min(1), amount: z.number().positive(), description: z.string().optional() });
+import { CreateExpenseSchema as Schema } from "@dukaandari/shared";
 
 export const ExpenseService = {
   async create(body: unknown, shopId: string) {

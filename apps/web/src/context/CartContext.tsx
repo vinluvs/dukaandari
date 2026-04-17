@@ -27,18 +27,20 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const addToCart = (product: Product, quantity = 1) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
+      const currentQty = existing ? existing.quantity : 0;
+      
+      if (product.currentStock !== undefined && currentQty + quantity > product.currentStock) {
+        toast.error(`Only ${product.currentStock} units available for ${product.name}`);
+        return prev;
+      }
+      
       if (existing) {
-        // Optional: Check stock limits here if strict
-        if (product.currentStock !== undefined && existing.quantity + quantity > product.currentStock) {
-          toast.warning(`Only ${product.currentStock} units available for ${product.name}`);
-        }
         return prev.map((item) =>
           item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
         );
       }
       return [...prev, { product, quantity }];
     });
-    // toast.success(`Added ${product.name} to cart`);
   };
 
   const removeFromCart = (productId: string) => {
@@ -50,9 +52,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       removeFromCart(productId);
       return;
     }
-    setCart((prev) =>
-      prev.map((item) => (item.product.id === productId ? { ...item, quantity } : item))
-    );
+    setCart((prev) => {
+      const existing = prev.find((item) => item.product.id === productId);
+      if (existing && existing.product.currentStock !== undefined && quantity > existing.product.currentStock) {
+        toast.error(`Only ${existing.product.currentStock} units available for ${existing.product.name}`);
+        return prev;
+      }
+      return prev.map((item) => (item.product.id === productId ? { ...item, quantity } : item));
+    });
   };
 
   const clearCart = () => setCart([]);

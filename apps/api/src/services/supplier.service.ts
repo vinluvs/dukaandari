@@ -2,7 +2,12 @@ import { prisma } from "../lib/prisma";
 import { AppError } from "../middleware/errorHandler";
 import { z } from "zod";
 
-const Schema = z.object({ name: z.string().min(1), phone: z.string().optional(), email: z.string().email().optional(), gstNumber: z.string().optional() });
+const Schema = z.object({
+  name: z.string().min(1),
+  phone: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal("")),
+  gstNumber: z.string().optional().nullable(),
+});
 
 export const SupplierService = {
   async create(body: unknown, shopId: string) {
@@ -17,7 +22,25 @@ export const SupplierService = {
       prisma.supplier.findMany({ where: { shopId, isActive: true }, skip, take: limit, orderBy: { name: "asc" } }),
       prisma.supplier.count({ where: { shopId, isActive: true } }),
     ]);
-    return { items, total, page, limit, pages: Math.ceil(total / limit) };
+
+    const supplierIds = items.map(i => i.id);
+    const ledgerAggregations = await prisma.ledgerEntry.groupBy({
+      by: ['entityId'],
+      where: { shopId, entityType: 'supplier', entityId: { in: supplierIds } },
+      _sum: { debit: true, credit: true }
+    });
+    
+    const balanceMap = ledgerAggregations.reduce((acc, curr) => {
+      acc[curr.entityId] = Number(curr._sum.credit || 0) - Number(curr._sum.debit || 0); // supplier balance: credit decreases owed, wait... Payables: credit increases amount we owe
+      return acc;
+    }, {} as Record<string, number>);
+
+    const enrichedItems = items.map(item => ({
+      ...item,
+      balance: balanceMap[item.id] || 0
+    }));
+
+    return { items: enrichedItems, total, page, limit, pages: Math.ceil(total / limit) };
   },
   async getLedger(supplierId: string, shopId: string) {
     const supplier = await prisma.supplier.findFirst({ where: { id: supplierId, shopId } });

@@ -4,9 +4,9 @@ import { z } from "zod";
 
 const Schema = z.object({
   name: z.string().min(1),
-  phone: z.string().optional(),
-  email: z.string().email().optional(),
-  creditLimit: z.number().min(0).default(0),
+  phone: z.string().optional().nullable(),
+  email: z.string().email().optional().nullable().or(z.literal("")),
+  creditLimit: z.preprocess((val) => Number(val) || 0, z.number().min(0)),
 });
 
 export const CustomerService = {
@@ -22,7 +22,25 @@ export const CustomerService = {
       prisma.customer.findMany({ where: { shopId, isActive: true }, skip, take: limit, orderBy: { name: "asc" } }),
       prisma.customer.count({ where: { shopId, isActive: true } }),
     ]);
-    return { items, total, page, limit, pages: Math.ceil(total / limit) };
+
+    const customerIds = items.map(i => i.id);
+    const ledgerAggregations = await prisma.ledgerEntry.groupBy({
+      by: ['entityId'],
+      where: { shopId, entityType: 'customer', entityId: { in: customerIds } },
+      _sum: { debit: true, credit: true }
+    });
+    
+    const balanceMap = ledgerAggregations.reduce((acc, curr) => {
+      acc[curr.entityId] = Number(curr._sum.debit || 0) - Number(curr._sum.credit || 0);
+      return acc;
+    }, {} as Record<string, number>);
+
+    const enrichedItems = items.map(item => ({
+      ...item,
+      balance: balanceMap[item.id] || 0
+    }));
+
+    return { items: enrichedItems, total, page, limit, pages: Math.ceil(total / limit) };
   },
   async getLedger(customerId: string, shopId: string) {
     const customer = await prisma.customer.findFirst({ where: { id: customerId, shopId } });

@@ -31,4 +31,40 @@ router.get("/financial-year", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// GET /api/v1/reports/ledger/sales?shop_id=&start_date=&end_date=&page=&limit=
+router.get("/ledger/sales", async (req, res, next) => {
+  try {
+    const { ReportService } = await import("../services/report.service");
+    const data = await ReportService.salesLedger((req as any).shopId, req.query);
+    res.json({ success: true, message: "OK", data });
+  } catch (err) { next(err); }
+});
+
+// GET /api/v1/reports/ledger/expenses?shop_id=&start_date=&end_date=&page=&limit=
+router.get("/ledger/expenses", async (req, res, next) => {
+  try {
+    const { ReportService } = await import("../services/report.service");
+    const data = await ReportService.expenseLedger((req as any).shopId, req.query);
+    res.json({ success: true, message: "OK", data });
+  } catch (err) { next(err); }
+});
+
+// GET /api/v1/reports/ledger/purchases?shop_id=&start_date=&end_date=&page=&limit=
+router.get("/ledger/purchases", async (req, res, next) => {
+  try {
+    const { ReportService } = await import("../services/report.service");
+    const data = await ReportService.purchaseLedger((req as any).shopId, req.query);
+    res.json({ success: true, message: "OK", data });
+  } catch (err) { next(err); }
+});
+
+// GET /api/v1/reports/itr-export?shop_id=&year=
+router.get("/itr-export", async (req, res, next) => {
+  try {
+    const { ReportService } = await import("../services/report.service");
+    const data = await ReportService.itrExport((req as any).shopId, req.query);
+    res.json({ success: true, message: "OK", data });
+  } catch (err) { next(err); }
+});
+
 export default router;

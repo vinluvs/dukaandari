@@ -1,10 +1,20 @@
+"use client";
+
+import { CreateExpenseModal } from "@/components/expenses/create-expense-modal";
+import { ExpenseList } from "@/components/expenses/expense-list";
+
 export default function ExpensesPage() {
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Expenses</h1>
-      <div className="rounded-lg border border-dashed border-border h-96 flex items-center justify-center text-muted-foreground">
-        Expense management coming soon
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Expenses</h1>
+          <p className="text-muted-foreground">Manage ongoing and one-time business expenses.</p>
+        </div>
+        <CreateExpenseModal />
       </div>
+
+      <ExpenseList />
     </div>
   );
 }
