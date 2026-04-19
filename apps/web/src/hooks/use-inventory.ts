@@ -36,6 +36,7 @@ export interface Product {
   isActive: boolean;
   category?: Category;
   uom?: Uom;
+  offers?: any[];
 }
 
 // ─── CATEGORIES ───

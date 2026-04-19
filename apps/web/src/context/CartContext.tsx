@@ -17,6 +17,7 @@ interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   cartTotal: number;
+  cartDiscount: number;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -64,12 +65,33 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = () => setCart([]);
 
-  const totalItems = useMemo(() => cart.reduce((acc, item) => acc + item.quantity, 0), [cart]);
-  const cartTotal = useMemo(() => cart.reduce((acc, item) => acc + (Number(item.product.sellingPrice) * item.quantity), 0), [cart]);
+  const { cartTotal, cartDiscount, totalItems } = useMemo(() => {
+    let total = 0;
+    let discount = 0;
+    let items = 0;
+    cart.forEach((item) => {
+      const price = Number(item.product.sellingPrice);
+      const qty = item.quantity;
+      items += qty;
+      const subtotal = price * qty;
+      
+      const bestOffer = item.product.offers?.reduce((prev, curr) => {
+        let val = 0;
+        if (curr.discountType === "PERCENTAGE") val = (price * Number(curr.discountValue)) / 100;
+        else val = Number(curr.discountValue);
+        return val > prev.val ? { val, id: curr.id } : prev;
+      }, { val: 0, id: null as string | null });
+
+      const lineDiscount = (bestOffer?.val ?? 0) * qty;
+      total += subtotal - lineDiscount;
+      discount += lineDiscount;
+    });
+    return { cartTotal: total, cartDiscount: discount, totalItems: items };
+  }, [cart]);
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, cartTotal }}
+      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, cartTotal, cartDiscount }}
     >
       {children}
     </CartContext.Provider>

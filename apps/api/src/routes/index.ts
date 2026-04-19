@@ -11,6 +11,7 @@ import expenseRoutes from "./expense.routes";
 import reportRoutes from "./report.routes";
 import profileRoutes from "./profile.routes";
 import purchaseRoutes from "./purchase.routes";
+import offerRoutes from "./offer.routes";
 
 export const router = Router();
 
@@ -34,4 +35,5 @@ router.use("/expenses", expenseRoutes);
 router.use("/reports", reportRoutes);
 router.use("/profile", profileRoutes);
 router.use("/purchases", purchaseRoutes);
+router.use("/offers", offerRoutes);
 

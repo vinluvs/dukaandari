@@ -27,14 +27,25 @@ export default function POSPage() {
   }, [cart]);
 
   const filtered = useMemo(() => {
-    if (!search) return products;
-    const q = search.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.sku.toLowerCase().includes(q) ||
-        (p.barcode && p.barcode.toLowerCase().includes(q))
-    );
+    let result = products;
+    if (search) {
+      const q = search.toLowerCase();
+      result = products.filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          p.sku.toLowerCase().includes(q) ||
+          (p.barcode && p.barcode.toLowerCase().includes(q))
+      );
+    }
+    
+    // Sort items with offers to the top
+    return [...result].sort((a, b) => {
+      const aHasOffer = (a.offers?.length || 0) > 0;
+      const bHasOffer = (b.offers?.length || 0) > 0;
+      if (aHasOffer && !bHasOffer) return -1;
+      if (!aHasOffer && bHasOffer) return 1;
+      return 0;
+    });
   }, [products, search]);
 
   const handleScan = (code: string) => {
@@ -104,12 +115,19 @@ export default function POSPage() {
                   className={`relative rounded-xl border bg-card p-3 flex flex-col gap-2 transition-shadow ${product.currentStock === 0 ? "opacity-50 grayscale cursor-not-allowed" : "cursor-pointer hover:shadow-md"} ${q > 0 ? "border-primary/60 ring-1 ring-primary/30" : ""}`}
                   onClick={() => product.currentStock && product.currentStock > 0 && addToCart(product)}
                 >
-                  {/* Stock badge */}
-                  {product.currentStock !== undefined && product.currentStock <= product.lowStockThreshold && (
-                    <Badge variant="destructive" className="absolute top-2 right-2 text-[10px] px-1.5 py-0.5">
-                      Low
-                    </Badge>
-                  )}
+                  {/* Stock and Offer badges */}
+                  <div className="absolute top-2 right-2 flex flex-col gap-1 items-end">
+                    {product.currentStock !== undefined && product.currentStock <= product.lowStockThreshold && (
+                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">
+                        Low
+                      </Badge>
+                    )}
+                    {(product.offers?.length || 0) > 0 && (
+                      <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20 text-[10px] px-1.5 py-0.5">
+                        Offer
+                      </Badge>
+                    )}
+                  </div>
                   {/* Product info */}
                   <div className="flex-1">
                     <p className="font-medium text-sm leading-tight line-clamp-2">{product.name}</p>

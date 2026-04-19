@@ -12,8 +12,10 @@ const InvoiceSchema = z.object({
     quantity: z.number().positive(),
     price: z.number().min(0),
     discount: z.number().min(0).default(0),
+    offerId: z.string().uuid().optional(),
     gstPercentage: z.number().min(0).max(100).default(0),
   })).min(1),
+  manualDiscount: z.number().min(0).default(0),
   paymentAmount: z.number().min(0).optional(),
   paymentMode: z.enum(["cash", "upi", "bank", "card"]).default("cash"),
   notes: z.string().optional(),
@@ -53,9 +55,8 @@ export const InvoiceService = {
         }
       }
 
-      // 2. Calculate totals
       let subtotal = 0;
-      let totalDiscount = 0;
+      let totalOfferDiscount = 0;
       let totalTax = 0;
 
       const computedItems = data.items.map((item) => {
@@ -67,11 +68,12 @@ export const InvoiceService = {
           : 0;
         const total = taxableAmount + taxAmount;
         subtotal += lineSubtotal;
-        totalDiscount += lineDiscount;
+        totalOfferDiscount += lineDiscount;
         totalTax += taxAmount;
         return { ...item, taxAmount, total };
       });
 
+      const totalDiscount = totalOfferDiscount + data.manualDiscount;
       const totalAmount = subtotal - totalDiscount + totalTax;
       const actualPayment = data.paymentAmount !== undefined ? data.paymentAmount : totalAmount;
 
@@ -99,6 +101,7 @@ export const InvoiceService = {
           isIgst: data.isIgst,
           subtotal,
           totalDiscount,
+          manualDiscount: data.manualDiscount,
           totalTax,
           totalAmount,
           paymentStatus: actualPayment >= totalAmount ? "paid" : (actualPayment > 0 ? "partial" : "unpaid"),
@@ -110,6 +113,7 @@ export const InvoiceService = {
               quantity: i.quantity,
               price: i.price,
               discount: i.discount,
+              offerId: i.offerId,
               gstPercentage: i.gstPercentage,
               taxAmount: i.taxAmount,
               total: i.total,

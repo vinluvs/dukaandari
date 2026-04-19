@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductsTab } from "@/components/inventory/ProductsTab";
 import { CategoriesTab } from "@/components/inventory/CategoriesTab";
 import { UomTab } from "@/components/inventory/UomTab";
+import { OffersTab } from "@/components/inventory/OffersTab";
 
 export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState("products");
@@ -19,10 +20,11 @@ export default function InventoryPage() {
 
       <div className="mt-6 border border-border bg-card rounded-xl p-6 min-h-[500px]">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 max-w-md h-12">
+          <TabsList className="grid w-full grid-cols-4 max-w-lg h-12">
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="uoms">UOMs</TabsTrigger>
+            <TabsTrigger value="offers">Offers</TabsTrigger>
           </TabsList>
           <div className="mt-6">
             <TabsContent value="products" className="m-0 focus-visible:outline-none focus-visible:ring-0">
@@ -35,6 +37,10 @@ export default function InventoryPage() {
 
             <TabsContent value="uoms" className="m-0 focus-visible:outline-none focus-visible:ring-0">
               <UomTab />
+            </TabsContent>
+
+            <TabsContent value="offers" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+              <OffersTab />
             </TabsContent>
           </div>
         </Tabs>

@@ -50,7 +50,7 @@ export const ProductService = {
       ...(query["category_id"] ? { categoryId: String(query["category_id"]) } : {}),
     };
 
-    const [items, total] = await Promise.all([
+    const [items, total, allOffers] = await Promise.all([
       prisma.product.findMany({ 
         where, 
         skip, 
@@ -59,19 +59,42 @@ export const ProductService = {
         include: { category: true, uom: true } 
       }),
       prisma.product.count({ where }),
+      prisma.offer.findMany({
+        where: {
+          shopId,
+          isActive: true,
+          OR: [
+            { startDate: { lte: new Date() } },
+            { startDate: null as any }
+          ],
+          AND: [
+            { OR: [{ endDate: { gte: new Date() } }, { endDate: null }] }
+          ]
+        }
+      })
     ]);
 
-    const itemsWithStock = await Promise.all(
+    const itemsWithDetails = await Promise.all(
       items.map(async (p) => {
         const agg = await prisma.inventoryLog.aggregate({
           where: { productId: p.id },
           _sum: { quantityChange: true },
         });
-        return { ...p, currentStock: Number(agg._sum.quantityChange ?? 0) };
+
+        // Find applicable offers: product-specific or category-specific
+        const applicableOffers = allOffers.filter(o => 
+          o.productId === p.id || (o.categoryId && o.categoryId === p.categoryId)
+        );
+
+        return { 
+          ...p, 
+          currentStock: Number(agg._sum.quantityChange ?? 0),
+          offers: applicableOffers
+        };
       })
     );
 
-    return { items: itemsWithStock, total, page, limit, pages: Math.ceil(total / limit) };
+    return { items: itemsWithDetails, total, page, limit, pages: Math.ceil(total / limit) };
   },
 
   async update(id: string, body: unknown, shopId: string) {

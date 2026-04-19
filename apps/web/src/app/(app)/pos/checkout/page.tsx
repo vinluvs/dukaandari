@@ -25,15 +25,42 @@ export default function CheckoutPage() {
   const [customerId, setCustomerId] = useState<string>("walk-in");
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentMode, setPaymentMode] = useState("cash");
+  const [manualDiscount, setManualDiscount] = useState("");
   const [loading, setLoading] = useState(false);
 
   const { data: customers = [] } = useCustomers();
 
-  const subtotal = cart.reduce((acc, c) => acc + Number(c.product.sellingPrice) * c.quantity, 0);
+  const cartSubtotal = cart.reduce((acc, c) => acc + Number(c.product.sellingPrice) * c.quantity, 0);
+  const cartOfferDiscount = cart.reduce((acc, c) => {
+    const price = Number(c.product.sellingPrice);
+    const bestOffer = c.product.offers?.reduce((prev, curr) => {
+      let val = 0;
+      if (curr.discountType === "PERCENTAGE") val = (price * Number(curr.discountValue)) / 100;
+      else val = Number(curr.discountValue);
+      return val > prev.val ? { val, id: curr.id } : prev;
+    }, { val: 0, id: null as string | null });
+    return acc + (bestOffer?.val ?? 0) * c.quantity;
+  }, 0);
+
+  const manualDiscVal = parseFloat(manualDiscount) || 0;
+  const totalDiscount = cartOfferDiscount + manualDiscVal;
+
   const taxTotal = gstEnabled
-    ? cart.reduce((acc, c) => acc + (Number(c.product.sellingPrice) * c.quantity * (Number(c.product.gstPercentage) ?? 0)) / 100, 0)
+    ? cart.reduce((acc, c) => {
+        const price = Number(c.product.sellingPrice);
+        const bestOffer = c.product.offers?.reduce((prev, curr) => {
+          let val = 0;
+          if (curr.discountType === "PERCENTAGE") val = (price * Number(curr.discountValue)) / 100;
+          else val = Number(curr.discountValue);
+          return val > prev.val ? { val, id: curr.id } : prev;
+        }, { val: 0, id: null as string | null });
+        const lineDiscount = bestOffer?.val ?? 0;
+        const taxableAmount = (price - lineDiscount) * c.quantity;
+        return acc + (taxableAmount * (Number(c.product.gstPercentage) ?? 0)) / 100;
+      }, 0)
     : 0;
-  const netTotal = subtotal + taxTotal;
+
+  const netTotal = cartSubtotal - totalDiscount + taxTotal;
 
   const handleBill = async () => {
     if (cart.length === 0) return;
@@ -43,14 +70,27 @@ export default function CheckoutPage() {
         customerId: customerId === "walk-in" ? undefined : customerId,
         gstEnabled,
         isIgst,
+        manualDiscount: manualDiscVal,
         paymentAmount: parseFloat(paymentAmount) || netTotal,
         paymentMode,
-        items: cart.map((c) => ({
-          productId: c.product.id,
-          quantity: c.quantity,
-          price: Number(c.product.sellingPrice),
-          gstPercentage: Number(c.product.gstPercentage ?? 0),
-        })),
+        items: cart.map((c) => {
+          const price = Number(c.product.sellingPrice);
+          const bestOffer = c.product.offers?.reduce((prev, curr) => {
+            let val = 0;
+            if (curr.discountType === "PERCENTAGE") val = (price * Number(curr.discountValue)) / 100;
+            else val = Number(curr.discountValue);
+            return val > prev.val ? { val, id: curr.id } : prev;
+          }, { val: 0, id: null as string | null });
+
+          return {
+            productId: c.product.id,
+            quantity: c.quantity,
+            price,
+            discount: (bestOffer?.val ?? 0),
+            offerId: bestOffer?.id ?? undefined,
+            gstPercentage: Number(c.product.gstPercentage ?? 0),
+          };
+        }),
       };
 
       const { data } = await api.post(`/invoices?shop_id=${activeShop?.id}`, payload);
@@ -155,7 +195,25 @@ export default function CheckoutPage() {
       <div className="rounded-xl border bg-card p-4 space-y-2">
         <div className="flex justify-between text-sm">
           <span className="text-muted-foreground">Subtotal</span>
-          <span>₹{subtotal.toFixed(2)}</span>
+          <span>₹{cartSubtotal.toFixed(2)}</span>
+        </div>
+        {cartOfferDiscount > 0 && (
+          <div className="flex justify-between text-sm text-green-600">
+            <span className="flex items-center gap-1">Offers Applied</span>
+            <span>- ₹{cartOfferDiscount.toFixed(2)}</span>
+          </div>
+        )}
+        <div className="flex items-center justify-between text-sm gap-4">
+          <span className="text-muted-foreground whitespace-nowrap">Manual Discount</span>
+          <div className="relative w-24">
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground">₹</span>
+            <Input
+              className="h-7 pl-5 text-right text-xs"
+              placeholder="0.00"
+              value={manualDiscount}
+              onChange={(e) => setManualDiscount(e.target.value)}
+            />
+          </div>
         </div>
         {gstEnabled && (
           <div className="flex justify-between text-sm">
@@ -163,7 +221,7 @@ export default function CheckoutPage() {
             <span>₹{taxTotal.toFixed(2)}</span>
           </div>
         )}
-        <Separator />
+        <Separator className="my-1" />
         <div className="flex justify-between font-semibold text-base">
           <span>Total</span>
           <span className="text-primary">₹{netTotal.toFixed(2)}</span>
