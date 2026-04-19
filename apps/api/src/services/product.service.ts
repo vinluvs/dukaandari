@@ -43,7 +43,7 @@ export const ProductService = {
     const limit = Math.min(Number(query["limit"] ?? 20), 100);
     const skip = (page - 1) * limit;
 
-    const where = {
+    const where: any = {
       shopId,
       isActive: true,
       ...(query["search"] ? { name: { contains: String(query["search"]), mode: "insensitive" as const } } : {}),
@@ -64,8 +64,7 @@ export const ProductService = {
           shopId,
           isActive: true,
           OR: [
-            { startDate: { lte: new Date() } },
-            { startDate: null as any }
+            { startDate: { lte: new Date() } }
           ],
           AND: [
             { OR: [{ endDate: { gte: new Date() } }, { endDate: null }] }

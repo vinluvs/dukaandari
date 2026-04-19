@@ -71,7 +71,7 @@ export default function CheckoutPage() {
         gstEnabled,
         isIgst,
         manualDiscount: manualDiscVal,
-        paymentAmount: parseFloat(paymentAmount) || netTotal,
+        paymentAmount: paymentAmount === "" ? netTotal : parseFloat(paymentAmount),
         paymentMode,
         items: cart.map((c) => {
           const price = Number(c.product.sellingPrice);
@@ -95,7 +95,7 @@ export default function CheckoutPage() {
 
       const { data } = await api.post(`/invoices?shop_id=${activeShop?.id}`, payload);
       clearCart();
-      router.push(`/pos/invoice/${data.data.id}?print=1`);
+      router.push(`/pos/invoice/${data.data.id}`);
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Failed to create invoice");
     } finally {
@@ -243,13 +243,17 @@ export default function CheckoutPage() {
           </div>
           <div className="grid gap-2">
             <Label>Payment Mode</Label>
-            <Select value={paymentMode} onValueChange={setPaymentMode}>
+            <Select value={paymentMode} onValueChange={(val) => {
+              setPaymentMode(val);
+              if (val === "credit") setPaymentAmount("0");
+            }}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="cash">Cash</SelectItem>
                 <SelectItem value="upi">UPI</SelectItem>
                 <SelectItem value="card">Card</SelectItem>
                 <SelectItem value="bank">Bank Transfer</SelectItem>
+                <SelectItem value="credit">Credit (Unpaid)</SelectItem>
               </SelectContent>
             </Select>
           </div>

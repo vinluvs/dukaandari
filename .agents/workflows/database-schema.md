@@ -42,6 +42,7 @@ shops
 - gst_number
 - address
 - financial_year_start_month (default: 4)
+- autoOfferConfig (JSON: lookbackDays, limit, discountPercentage)
 - created_at
 - updated_at
 ```
@@ -113,6 +114,64 @@ inventory_logs
 - reference_id (invoice_id or purchase_id)
 - created_at
 ```
+
+---
+
+## 🏷️ OFFERS
+
+```
+offers
+- id
+- shop_id
+- productId (optional)
+- categoryId (optional)
+- name
+- discountType (PERCENTAGE, FIXED)
+- discountValue
+- minQuantity
+- startDate
+- endDate
+- isAutoOffer (boolean)
+- isActive (boolean)
+- created_at
+- updated_at
+```
+
+---
+
+## 📦 PURCHASES
+
+```
+purchases
+- id
+- shop_id
+- supplier_id
+- purchase_number
+- subtotal
+- total_tax
+- total_amount
+- status (active, voided)
+- created_at
+- updated_at
+```
+
+---
+
+## 📦 PURCHASE ITEMS
+
+```
+purchase_items
+- id
+- purchase_id
+- product_id
+- quantity
+- price
+- gst_percentage
+- tax_amount
+- total
+```
+
+---
 
 Never store stock directly. Always calculate from logs or maintain cached stock field.
 
@@ -321,6 +380,31 @@ POST   /customers/{id}/payment
 GET /reports/daily
 GET /reports/monthly
 GET /reports/financial-year
+GET /reports/itr-export
+```
+
+---
+
+## 🏷️ Offers
+
+```
+GET    /offers/
+POST   /offers/
+PATCH  /offers/{id}
+DELETE /offers/{id}
+GET    /offers/config
+PATCH  /offers/config
+POST   /offers/auto-generate
+```
+
+---
+
+## 📦 Purchases
+
+```
+GET    /purchases/
+POST   /purchases/
+GET    /purchases/{id}
 ```
 
 All reports must require `shop_id` context.

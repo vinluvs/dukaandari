@@ -46,7 +46,7 @@ export function useCategories() {
     queryKey: ["categories", activeShop?.id],
     queryFn: async () => {
       const { data } = await api.get<{ success: boolean; data: Category[] }>(`/product-categories?shop_id=${activeShop?.id}`);
-      return data.data;
+      return data.data || [];
     },
     enabled: !!activeShop?.id,
   });
@@ -114,7 +114,7 @@ export function useUoms() {
     queryKey: ["uoms", activeShop?.id],
     queryFn: async () => {
       const { data } = await api.get<{ success: boolean; data: Uom[] }>(`/uoms?shop_id=${activeShop?.id}`);
-      return data.data;
+      return data.data || [];
     },
     enabled: !!activeShop?.id,
   });
@@ -182,7 +182,7 @@ export function useProducts() {
     queryKey: ["products", activeShop?.id],
     queryFn: async () => {
       const { data } = await api.get<{ success: boolean; data: { items: Product[]; total: number; page: number; limit: number; pages: number } }>(`/products?shop_id=${activeShop?.id}`);
-      return data.data.items;
+      return data.data?.items || [];
     },
     enabled: !!activeShop?.id,
   });

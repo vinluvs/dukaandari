@@ -133,7 +133,7 @@ Agent must think in queries, not vibes.
 
 ---
 
-# 📊 ANALYTICS LOGIC SKILL
+# 📊 ANALYTICS & REPORTING SKILL
 
 Agent must:
 
@@ -141,6 +141,27 @@ Agent must:
 * Not load entire table in memory
 * Group by date properly
 * Respect financial year boundaries
+* **ITR Export Logic**: Aggregate P&L, GST, and Ledger data for tax filing.
+
+---
+
+# 🏷️ OFFERS & DISCOUNTS SKILL
+
+Agent must:
+
+* **Margin Safety**: Never allow discounts that result in negative margin unless explicitly authorized.
+* **Auto-Generation**: Use sales velocity data for auto-offer suggestions.
+* **Overlap Protection**: Handle cases where multiple offers apply to the same product.
+
+---
+
+# 💳 CREDIT MANAGEMENT SKILL
+
+Agent must:
+
+* **Ledger Consistency**: Every credit sale/purchase MUST create a corresponding ledger entry.
+* **Balance Calculation**: Always calculate outstanding balance from the sum of ledger entries.
+* **Credit Limits**: Respect customer credit limits during checkout.
 
 ---
 
@@ -228,5 +249,8 @@ A good Dukaandari agent:
 * Tests like QA engineer
 * Deploys like DevOps
 * Guards data like RBI vault 🏦
+* **Understands Offers**: Knows how to suggest and apply discounts based on stock velocity.
+* **Tax Ready**: Ensures every invoice and report is ready for ITR filing.
+* **Credit Aware**: Manages receivables and payables with ledger-level precision.
 
 ---

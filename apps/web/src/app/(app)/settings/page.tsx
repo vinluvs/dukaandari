@@ -2,7 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertTriangle, Trash2, RefreshCcw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +23,7 @@ const GST_MONTHS = [
 ];
 
 export default function SettingsPage() {
+  const router = useRouter();
   const { activeShop, refreshShops } = useAuth();
   const [form, setForm] = useState({
     name: "",
@@ -22,6 +33,10 @@ export default function SettingsPage() {
   });
   const [loading, setLoading] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     if (activeShop) {
@@ -58,6 +73,38 @@ export default function SettingsPage() {
       toast.error(err?.response?.data?.message ?? "Failed to update shop");
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleResetData() {
+    if (!activeShop) return;
+    setResetLoading(true);
+    try {
+      await api.post(`/shops/${activeShop.id}/reset?shop_id=${activeShop.id}`);
+      toast.success("All shop data has been cleared");
+      setResetDialogOpen(false);
+      // Optional: redirect to dashboard
+      router.push("/pos");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Failed to reset shop data");
+    } finally {
+      setResetLoading(false);
+    }
+  }
+
+  async function handleDeleteShop() {
+    if (!activeShop) return;
+    setDeleteLoading(true);
+    try {
+      await api.delete(`/shops/${activeShop.id}?shop_id=${activeShop.id}`);
+      toast.success("Shop deleted successfully");
+      setDeleteDialogOpen(false);
+      await refreshShops();
+      router.push("/");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message ?? "Failed to delete shop");
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -126,6 +173,73 @@ export default function SettingsPage() {
           Save changes
         </motion.button>
       </form>
+
+      <div className="bg-destructive/5 border border-destructive/20 rounded-xl p-5 space-y-4">
+        <div className="flex items-center gap-2 text-destructive">
+          <AlertTriangle size={20} />
+          <h2 className="font-semibold text-lg">Danger Zone</h2>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          These actions are destructive and cannot be undone. Please proceed with caution.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button 
+            variant="outline" 
+            className="flex-1 border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+            onClick={() => setResetDialogOpen(true)}
+          >
+            <RefreshCcw size={16} className="mr-2" />
+            Reset All Data
+          </Button>
+          <Button 
+            variant="destructive" 
+            className="flex-1"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 size={16} className="mr-2" />
+            Delete Shop Entirely
+          </Button>
+        </div>
+      </div>
+
+      {/* Reset Data Confirmation */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Shop Data?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete all invoices, products, customers, and ledger entries for <strong>{activeShop.name}</strong>. The shop itself will not be deleted.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setResetDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleResetData} disabled={resetLoading}>
+              {resetLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Confirm Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Shop Confirmation */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Shop Entirely?</DialogTitle>
+            <DialogDescription>
+              This will permanently delete the shop <strong>{activeShop.name}</strong> and all its associated data. This action is irreversible.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDeleteShop} disabled={deleteLoading}>
+              {deleteLoading ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+              Delete Permanently
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

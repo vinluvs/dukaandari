@@ -17,7 +17,7 @@ const InvoiceSchema = z.object({
   })).min(1),
   manualDiscount: z.number().min(0).default(0),
   paymentAmount: z.number().min(0).optional(),
-  paymentMode: z.enum(["cash", "upi", "bank", "card"]).default("cash"),
+  paymentMode: z.enum(["cash", "upi", "bank", "card", "credit"]).default("cash"),
   notes: z.string().optional(),
 });
 

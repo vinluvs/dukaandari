@@ -43,6 +43,25 @@ export function useCustomerLedger(id: string) {
       const { data } = await api.get(`/customers/${id}/ledger?shop_id=${activeShop?.id}`);
       return data.data;
     },
-    enabled: !!activeShop?.id && !!id,
+  });
+}
+
+export function useRecordRepayment(customerId: string) {
+  const { activeShop } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: { amount: number; mode: string; notes?: string }) => {
+      const { data } = await api.post(`/customers/${customerId}/payment?shop_id=${activeShop?.id}`, payload);
+      return data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["customers", activeShop?.id] });
+      queryClient.invalidateQueries({ queryKey: ["customers", activeShop?.id, customerId, "ledger"] });
+      toast.success("Repayment recorded successfully");
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to record repayment");
+    },
   });
 }

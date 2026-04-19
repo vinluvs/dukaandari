@@ -68,9 +68,10 @@ Other pages:
 * `/credit` (tabbed views: Customers Credit Due, Suppliers Credit Due)
 * `/credit/customer/[id]` (Customer transaction detail)
 * `/credit/supplier/[id]` (Supplier transaction detail)
-* `/reports` (financial stats + line graphs)
+* `/reports` (financial stats + line graphs + ITR Export)
 * `/expenses` (expense management)
 * `/purchase` (Purchase entry, similar to Sales entry)
+* `/offers` (Offer & discount management)
 * `/account` (account details + edit)
 * `/settings` (current shop details + edit + logout)
 
@@ -197,7 +198,19 @@ Requirements:
 * Financial stats cards (total sales, tax collected, expenses, net profit, etc.)
 * Line graphs for time-series data (daily/weekly/monthly)
 * Graphs must come from backend aggregated endpoints (no heavy client computation)
+* **ITR Export**: Dedicated button to download P&L and GST summary for a financial year.
 * Loading skeletons and empty states for every section
+
+---
+
+## Offers Page (`/offers`)
+
+Requirements:
+
+* List of active and inactive offers.
+* Form to create manual offers (fixed/percentage).
+* "Auto-Generate" button to suggest offers for slow-moving products.
+* Configuration for auto-offer logic (lookback days, discount limit).
 
 ---
 

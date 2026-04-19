@@ -71,13 +71,16 @@ Create ER structure BEFORE coding endpoints.
 * [x] product_categories
 * [x] uoms
 * [x] inventory_logs
-* [ ] customers
-* [ ] suppliers
-* [ ] invoices
-* [ ] invoice_items
-* [ ] payments
-* [ ] expenses
-* [ ] financial_years
+* [x] customers
+* [x] suppliers
+* [x] invoices
+* [x] invoice_items
+* [x] payments
+* [x] expenses
+* [x] offers
+* [x] purchases
+* [x] purchase_items
+* [x] financial_years
 
 Rules:
 
@@ -132,11 +135,11 @@ Do not connect to billing until inventory fully tested.
 
 ## Invoice Creation
 
-* [ ] GST toggle
-* [ ] Auto invoice numbering per shop
-* [ ] Add multiple items
-* [ ] Auto tax calculation
-* [ ] Discount per item or total
+* [x] GST toggle
+* [x] Auto invoice numbering per shop
+* [x] Add multiple items
+* [x] Auto tax calculation
+* [x] Discount per item or total
 * [ ] Return/refund flag
 
 ## Tax Logic
@@ -165,18 +168,18 @@ Invoice must:
 
 ## Customer
 
-* [ ] Profile creation
-* [ ] Credit limit
-* [ ] Ledger view
-* [ ] Payment entry
-* [ ] Outstanding balance auto-calc
+* [x] Profile creation
+* [x] Credit limit
+* [x] Ledger view
+* [x] Payment entry
+* [x] Outstanding balance auto-calc
 
 ## Supplier
 
-* [ ] Supplier profile
-* [ ] Purchase entry
-* [ ] Payables tracking
-* [ ] Ledger history
+* [x] Supplier profile
+* [x] Purchase entry
+* [x] Payables tracking
+* [x] Ledger history
 
 Ledger must be transaction-based, not static balance.
 
@@ -184,11 +187,11 @@ Ledger must be transaction-based, not static balance.
 
 # 💸 PHASE 7 – EXPENSE TRACKING
 
-* [ ] Expense category
-* [ ] Shop linked
-* [ ] Date
-* [ ] Amount
-* [ ] Notes
+* [x] Expense category
+* [x] Shop linked
+* [x] Date
+* [x] Amount
+* [x] Notes
 
 Expenses must reflect in:
 
@@ -201,31 +204,39 @@ Expenses must reflect in:
 
 ## Daily Report
 
-* [ ] Total sales
-* [ ] Tax collected
-* [ ] Expenses
-* [ ] Net revenue
+* [x] Total sales
+* [x] Tax collected
+* [x] Expenses
+* [x] Net revenue
 
 ## Weekly & Monthly
 
-* [ ] Aggregated sales
-* [ ] Top products
-* [ ] Outstanding credits
-* [ ] Payables
+* [x] Aggregated sales
+* [x] Top products
+* [x] Outstanding credits
+* [x] Payables
 
-## Financial Year Report
+## Financial Year & Tax
 
-* [ ] Total revenue
-* [ ] Total GST collected
-* [ ] Total expenses
-* [ ] Net profit
-* [ ] Export CSV
-
-No advanced charts before backend aggregation verified.
+* [x] Total revenue
+* [x] Total GST collected
+* [x] Total expenses
+* [x] Net profit
+* [x] Export CSV
+* [x] Export for ITR (PDF/Excel aggregation)
 
 ---
 
-# 🧪 PHASE 9 – TESTING
+# 🏷️ PHASE 9 – OFFERS & DISCOUNTS
+
+* [x] Manual Offer creation
+* [x] Auto-offer generation logic (Slow moving products)
+* [x] Auto-offer configuration
+* [x] Offer application in POS (Sales)
+
+---
+
+# 🧪 PHASE 10 – TESTING
 
 ## Unit Testing
 
